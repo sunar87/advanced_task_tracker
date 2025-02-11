@@ -35,7 +35,9 @@ class Task(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
-        related_name='category'
+        related_name='category',
+        null=True,
+        blank=True
     )
     user = models.ForeignKey(
         User,
