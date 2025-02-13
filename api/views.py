@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, generics
 
 from .serializers import TagsSerializer, CategorySerializer, TaskSerializer
 from tasks.models import Tags, Category, Task
@@ -126,11 +126,23 @@ class CategoryDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TaskView(APIView):
-    def get(self, request):
-        queryset = Task.objects.prefetch_related('tags').all()
-        serializer = TaskSerializer(
-            instance=queryset,
-            many=True
-        )
-        return Response(serializer.data)
+class TaskListView(generics.ListCreateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+
+
+class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        return Response(
+            {'detail': 'Объект изменен успешно'}, status=status.HTTP_200_OK
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {'detail': 'Объект удален успешно'}, status=status.HTTP_200_OK
+            )
