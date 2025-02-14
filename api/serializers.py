@@ -21,10 +21,14 @@ class TaskSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tags.objects.all(), allow_null=True
         )
+    user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = Task
-        fields = '__all__'
+        fields = ['title', 'description',
+                  'category', 'tags',
+                  'status', 'priority',
+                  'user']
 
     def create(self, validated_data):
         tags = validated_data.pop('tags', [])
