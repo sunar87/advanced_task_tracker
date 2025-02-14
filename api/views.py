@@ -6,7 +6,11 @@ from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated
     )
-from rest_framework import status, generics
+from rest_framework import (
+    status,
+    generics
+    )
+import django_filters
 
 from .serializers import (
     TagsSerializer,
@@ -18,6 +22,7 @@ from tasks.models import (
     Category,
     Task
     )
+from .filters import TaskFilter
 from .const import CHANGE_METHODS
 
 
@@ -168,6 +173,8 @@ class CategoryDetailView(APIView):
 class TaskListView(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = TaskFilter
 
     def get_queryset(self):
         return Task.objects.filter(user=self.request.user)
