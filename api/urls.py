@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     path(
         'api/tags/',
-        views.TagsGetView.as_view(),
+        views.TagsView.as_view(),
         name='tags'
         ),
     path(
