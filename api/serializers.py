@@ -5,35 +5,37 @@ from tasks.models import Tags, Category, Task
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tags
-        fields = '__all__'
+        fields = ['name']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ['name']
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    category = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all()
-        )
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Tags.objects.all(), allow_null=True
-        )
+    category = CategorySerializer()
+    tags = TagsSerializer(many=True)
     user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = Task
-        fields = ['title', 'description',
-                  'category', 'tags',
-                  'status', 'priority',
-                  'user']
+        fields = ['title', 'description', 'category',
+                  'tags', 'status', 'priority',
+                  'user', 'created_at']
 
     def create(self, validated_data):
-        tags = validated_data.pop('tags', [])
-        category = validated_data.pop('category')
-        task = Task.objects.create(**validated_data, category=category)
-        for tag in tags:
-            task.tags.add(tag)
+        tags_data = validated_data.pop('tags', [])
+        category_data = validated_data.pop('category')
+        category_instance = Category.objects.get(name=category_data['name'])
+
+        task = Task.objects.create(
+            **validated_data, category=category_instance
+            )
+
+        for tag_data in tags_data:
+            tag_instance = Tags.objects.get(name=tag_data['name'])
+            task.tags.add(tag_instance)
+
         return task
