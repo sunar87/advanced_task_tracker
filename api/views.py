@@ -1,12 +1,38 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status, generics
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAdminUser,
+    AllowAny,
+    IsAuthenticated
+    )
+from rest_framework import (
+    status,
+    generics
+    )
+import django_filters
 
-from .serializers import TagsSerializer, CategorySerializer, TaskSerializer
-from tasks.models import Tags, Category, Task
+from .serializers import (
+    TagsSerializer,
+    CategorySerializer,
+    TaskSerializer
+    )
+from tasks.models import (
+    Tags,
+    Category,
+    Task
+    )
+from .filters import TaskFilter
+from .const import CHANGE_METHODS
 
 
-class TagsGetView(APIView):
+class TagsView(APIView):
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated(), IsAdminUser()]
+
     def get(self, request):
         queryset = Tags.objects.prefetch_related('tags').all()
         serializer = TagsSerializer(
@@ -24,6 +50,12 @@ class TagsGetView(APIView):
 
 
 class TagDetailView(APIView):
+
+    def get_permissions(self):
+        if self.request.method in CHANGE_METHODS:
+            return [IsAuthenticated(), IsAdminUser()]
+        return [AllowAny()]
+
     def get(self, request, tag_id):
         try:
             queryset = Tags.objects.get(id=tag_id)
@@ -66,6 +98,12 @@ class TagDetailView(APIView):
 
 
 class CategoryView(APIView):
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated(), IsAdminUser()]
+
     def get(self, request):
         queryset = Category.objects.all()
         serializer = CategorySerializer(
@@ -85,6 +123,12 @@ class CategoryView(APIView):
 
 
 class CategoryDetailView(APIView):
+
+    def get_permissions(self):
+        if self.request.method in CHANGE_METHODS:
+            return [IsAuthenticated(), IsAdminUser()]
+        return [AllowAny()]
+
     def get(self, request, category_id):
         try:
             queryset = Category.objects.get(id=category_id)
@@ -127,13 +171,27 @@ class CategoryDetailView(APIView):
 
 
 class TaskListView(generics.ListCreateAPIView):
-    queryset = Task.objects.all()
+    queryset = Task.objects.select_related(
+        'category', 'user'
+        ).prefetch_related(
+            'tags'
+            )
     serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = TaskFilter
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Task.objects.filter(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
