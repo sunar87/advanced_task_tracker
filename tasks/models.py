@@ -56,6 +56,7 @@ class Task(models.Model):
         default=MEDIUM
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    expired_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']
