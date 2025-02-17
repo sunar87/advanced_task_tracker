@@ -97,7 +97,6 @@
                     const tableBody = document.getElementById('task-table-body');
                     tableBody.innerHTML = '';
         
-                    // data — это массив, поэтому используем его напрямую
                     if (Array.isArray(data)) {
                         data.forEach((task, index) => {
                             const row = document.createElement('tr');
