@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 from .const import STATUS_CHOICES, PRIORITY_CHOICES, ACTIVE, MEDIUM
 
@@ -40,7 +40,7 @@ class Task(models.Model):
         blank=True
     )
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=128)
