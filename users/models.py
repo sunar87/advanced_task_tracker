@@ -5,7 +5,9 @@ from django.contrib.auth.models import AbstractUser
 class CustomTelegramUser(AbstractUser):
     telegram_id = models.CharField(
         max_length=64,
-        unique=True
+        unique=True,
+        null=True,
+        blank=True
     )
     telegram_username = models.CharField(
         max_length=255,
