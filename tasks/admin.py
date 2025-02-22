@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import Task, Tags, Category
+from users.models import CustomTelegramUser
 
 
 @admin.register(Task)
@@ -17,3 +18,8 @@ class TagsAdmin(admin.ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
+
+
+@admin.register(CustomTelegramUser)
+class CategoryUser(admin.ModelAdmin):
+    pass
