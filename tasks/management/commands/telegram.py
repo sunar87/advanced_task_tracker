@@ -30,16 +30,16 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
-async def send_telegram_message(message):
+async def send_telegram_message(chat_id, message):
     try:
-        await bot.send_message(chat_id=CHAT_ID, text=message)
+        await bot.send_message(chat_id, text=message)
         logger.info(f"Message sent to chat {CHAT_ID}")
     except Exception as e:
         logger.error(f"Failed to send message: {e}")
 
 
-def send_message_sync(message):
-    async_to_sync(send_telegram_message)(message)
+def send_message_sync(chat_id, message):
+    async_to_sync(send_telegram_message)(chat_id, message)
 
 
 class UserData(StatesGroup):

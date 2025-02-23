@@ -23,6 +23,7 @@ def notifications(request):
         try:
             user_profile = CustomTelegramUser.objects.get(email=user_email)
             user_profile.telegram_id = user_id
+            user_profile.notification = True
             user_profile.save()
             return JsonResponse(
                 {'status': 'success', 'message': 'Telegram id linked successfuly'}
