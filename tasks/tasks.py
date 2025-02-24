@@ -1,39 +1,32 @@
 from django.db import transaction, DatabaseError
 from celery import shared_task
+import logging
 
 from .service import TaskService
 from users.models import CustomTelegramUser
 from .const import MSG
 from .management.commands.telegram import send_message_sync
 
-
-@shared_task
-def check_task_expiration(user_id):
-    try:
-        with transaction.atomic():
-            expired_tasks = TaskService.get_expired_tasks(user_id=user_id)
-            custom_user = CustomTelegramUser.objects.filter(
-                id=user_id
-            ).first()
-            if custom_user and custom_user.telegram_id:
-                titles = [task.title for task in expired_tasks]
-                expired_tasks.update(status='expired')
-                if titles:
-                    message = MSG.format('\n'.join(titles))
-                    send_message_sync(
-                        chat_id=custom_user.telegram_id, message=message
-                    )
-                    return f"Updated {expired_tasks.count()} tasks to 'expired' status for user {user_id}"
-                return 'There no tasks'
-    except DatabaseError as e:
-        print(f"Database error occurred: {e}")
-        return "Failed to update tasks due to a database error"
-    
-# Баг в вычислении titles при обновлении статуса приходит пустой queryset
+logger = logging.getLogger(__name__)
 
 
 @shared_task
-def dispatch_check_task_expiration():
-    users = CustomTelegramUser.objects.filter(notification=True).distinct()
+def expired_tasks():
+    total_updated_tasks = 0
+    users = CustomTelegramUser.objects.all()
+
     for user in users:
-        check_task_expiration.delay(user_id=user.id)
+        tasks = TaskService.get_expired_tasks(user_id=user.id)
+
+        if tasks.exists():
+            if user.notification:
+                titles = [task.title for task in tasks]
+                message = MSG.format('\n'.join(titles))
+                send_message_sync(chat_id=user.telegram_id, message=message)
+                logger.info(f"Sent notification to user {user.id} with {tasks.count()} expired tasks")
+
+            tasks.update(status='expired')
+            total_updated_tasks += tasks.count()
+
+    logger.info(f"Updated a total of {total_updated_tasks} tasks to 'expired' status")
+    return f'Updated {total_updated_tasks} tasks'
