@@ -155,7 +155,7 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_BEAT_SCHEDULE = {
     'send-every-minute': {
-        'task': 'tasks.tasks.dispatch_check_task_expiration',
+        'task': 'tasks.tasks.expired_tasks',
         'schedule': crontab(minute='*/1'),
     },
 }
