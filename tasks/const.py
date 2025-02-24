@@ -16,3 +16,5 @@ PRIORITY_CHOICES = [
     (MEDIUM, 'Medium'),
     (LOW, 'Low'),
 ]
+
+MSG = "Истекшие задачи:\n{}"
