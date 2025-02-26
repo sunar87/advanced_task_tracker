@@ -171,15 +171,16 @@ class CategoryDetailView(APIView):
 
 
 class TaskListView(generics.ListCreateAPIView):
-    queryset = Task.objects.select_related(
-        'category', 'user'
-        ).prefetch_related(
-            'tags'
-            )
+
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = TaskFilter
+
+    def get_queryset(self):
+        return Task.objects.filter(user=self.request.user)
+    # передать токен в шаблон. Как?
+    # 'Authorization': 'Token 084e990565f1c12672974d872a45ebdde76bda80'
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
