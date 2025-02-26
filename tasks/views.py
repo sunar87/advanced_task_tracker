@@ -1,17 +1,26 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from rest_framework.authtoken.models import Token
 
 from users.models import CustomTelegramUser
 from .models import Task
 
 
+@login_required
 def tasks(request):
     tasks = Task.objects.select_related(
         'category', 'user'
         ).prefetch_related(
             'tags'
+            ).filter(
+                user=request.user
             )
+    token = None
+    if request.user.is_authenticated:
+        token, _ = Token.objects.get_or_create(user=request.user)
+        request.session['auth_token'] = token.key
     return render(request, 'tasks.html', {'tasks': tasks})
 
 

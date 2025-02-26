@@ -24,9 +24,9 @@ def expired_tasks():
                 message = MSG.format('\n'.join(titles))
                 send_message_sync(chat_id=user.telegram_id, message=message)
                 logger.info(f"Sent notification to user {user.id} with {tasks.count()} expired tasks")
-
-            tasks.update(status='expired')
-            total_updated_tasks += tasks.count()
+            with transaction.atomic:
+                tasks.update(status='expired')
+                total_updated_tasks += tasks.count()
 
     logger.info(f"Updated a total of {total_updated_tasks} tasks to 'expired' status")
     return f'Updated {total_updated_tasks} tasks'

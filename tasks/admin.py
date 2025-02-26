@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
 from .models import Task, Tags, Category
 from users.models import CustomTelegramUser
@@ -21,5 +22,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(CustomTelegramUser)
-class CategoryUser(admin.ModelAdmin):
-    pass
+class CustomTelegramUserAdmin(UserAdmin):
+    list_display = ('username', 'telegram_id', 'telegram_username', 'notification', 'is_staff')
+    fieldsets = UserAdmin.fieldsets + (
+        ('Telegram Data', {'fields': ('telegram_id', 'telegram_username', 'notification')}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Telegram Data', {'fields': ('telegram_id', 'telegram_username', 'notification')}),
+    )
