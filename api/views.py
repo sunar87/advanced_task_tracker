@@ -179,8 +179,6 @@ class TaskListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Task.objects.filter(user=self.request.user)
-    # передать токен в шаблон. Как?
-    # 'Authorization': 'Token 084e990565f1c12672974d872a45ebdde76bda80'
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
