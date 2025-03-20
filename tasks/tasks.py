@@ -1,4 +1,4 @@
-from django.db import transaction, DatabaseError
+from django.db import transaction
 from celery import shared_task
 import logging
 
@@ -24,7 +24,7 @@ def expired_tasks():
                 message = MSG.format('\n'.join(titles))
                 send_message_sync(chat_id=user.telegram_id, message=message)
                 logger.info(f"Sent notification to user {user.id} with {tasks.count()} expired tasks")
-            with transaction.atomic:
+            with transaction.atomic():
                 tasks.update(status='expired')
                 total_updated_tasks += tasks.count()
 

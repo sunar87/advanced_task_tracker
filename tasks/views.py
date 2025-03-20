@@ -44,3 +44,12 @@ def notifications(request):
     return JsonResponse(
         {'status': 'error', 'message': 'Invalid request'}, status=400
         )
+
+
+@login_required
+def add_task(request):
+    token = None
+    if request.user.is_authenticated:
+        token, _ = Token.objects.get_or_create(user=request.user)
+        request.session['auth_token'] = token.key
+    return render(request, 'add_tasks.html', {'tasks': tasks})
